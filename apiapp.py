@@ -23,7 +23,21 @@ def get_parkleitsystem_data():
     f = urllib.request.urlopen(req)
     xhtml = f.read().decode('utf-8')
     table_parser.feed(xhtml)
-    return jsonify(table_parser.tables[0])
+    table = table_parser.tables[0]
+    print(table)
+    list_response = []
+    for row in table:
+        dict = {}
+        dict['P'] = row[0]
+        dict['Status'] = row[1]
+        dict['Gesamt'] = row[2]
+        dict['Frei'] = row[3]
+        latlon = row[4].split(',')
+        dict['Lat'] = latlon[0]
+        dict['Lon'] = latlon[1]
+        list_response.append(dict)
+    return jsonify(list_response)
+
 
 @app.route('/api/stand', methods=['GET'])
 def get_stand():
@@ -33,6 +47,7 @@ def get_stand():
     paragraph_parser.feed(xhtml)
     return jsonify(paragraph_parser.stand)
 
+
 if __name__ == '__main__':
-   #app.run(host='0.0.0.0')
-   app.run(debug=True)
+    # app.run(host='0.0.0.0')
+    app.run(debug=True)
