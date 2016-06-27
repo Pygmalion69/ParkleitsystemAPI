@@ -21,20 +21,20 @@ def not_found(error):
 def get_parkleitsystem_data():
     req = urllib.request.Request(url=url)
     f = urllib.request.urlopen(req)
-    xhtml = f.read().decode('utf-8')
+    xhtml = f.read().decode(f.headers.get_content_charset(), 'ignore')
     table_parser.feed(xhtml)
     table = table_parser.tables[0]
     print(table)
     list_response = []
     for row in table:
         dict = {}
-        dict['P'] = row[0]
+        dict['Parkplatz'] = row[0]
         dict['Status'] = row[1]
-        dict['Gesamt'] = row[2]
-        dict['Frei'] = row[3]
+        dict['Gesamt'] = int(row[2])
+        dict['Frei'] = int(row[3])
         latlon = row[4].split(',')
-        dict['Lat'] = latlon[0]
-        dict['Lon'] = latlon[1]
+        dict['Lat'] = float(latlon[0])
+        dict['Lon'] = float(latlon[1])
         list_response.append(dict)
     return jsonify(list_response)
 
