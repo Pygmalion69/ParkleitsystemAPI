@@ -45,7 +45,7 @@ def get_parkleitsystem_data():
 def get_stand():
     req = urllib.request.Request(url=url)
     f = urllib.request.urlopen(req)
-    xhtml = f.read().decode('utf-8')
+    xhtml = f.read().decode('utf-8', 'ignore')
     paragraph_parser.feed(xhtml)
     return jsonify(paragraph_parser.stand)
 
