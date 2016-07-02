@@ -21,10 +21,12 @@ def not_found(error):
 def get_parkleitsystem_data():
     req = urllib.request.Request(url=url)
     f = urllib.request.urlopen(req)
-    xhtml = f.read().decode(f.headers.get_content_charset(), 'ignore')
+    # print(f.getcode())
+    xhtml = f.read().decode('utf-8', 'ignore')
     table_parser.feed(xhtml)
+    if len(table_parser.tables) == 0:
+        abort(404)
     table = table_parser.tables[0]
-    print(table)
     list_response = []
     for row in table:
         dict = {}

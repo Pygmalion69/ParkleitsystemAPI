@@ -34,7 +34,7 @@ class HTMLTableParser(HTMLParser):
         self._current_table = []
         self._current_row = []
         self._current_cell = []
-        self._current_url = "";
+        self._current_url = ""
         self.tables = []
 
     def handle_starttag(self, tag, attrs):
@@ -42,7 +42,7 @@ class HTMLTableParser(HTMLParser):
         The other tags (<table>, <tr>) are only handled at the closing point.
         """
         if self._in_td and attrs[0][0] == "href":
-            print(attrs)
+            # print(attrs)
             self._current_url = attrs[0][1]
         if tag == 'td':
             self._in_td = True
@@ -52,7 +52,7 @@ class HTMLTableParser(HTMLParser):
     def handle_data(self, data):
         """ This is where we save content to a cell """
         if self._in_td:  # or self._in_th:
-            print(data)
+            # print(data)
             self._current_cell.append(data.strip())
 
     def handle_charref(self, name):
