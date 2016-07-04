@@ -3,6 +3,7 @@ from flask import Flask, jsonify, abort, make_response, request
 import urllib.request
 from html_table_parser import HTMLTableParser
 from html_table_parser import HTMLParagraphParser
+import datetime
 
 app = Flask(__name__)
 
@@ -27,6 +28,12 @@ def get_parkleitsystem_data():
     if len(table_parser.tables) == 0:
         abort(404)
     table = table_parser.tables[0]
+    paragraph_parser.feed(xhtml)
+    stand_paragraph = paragraph_parser.stand
+    stand_datetime = datetime.time()
+    if stand_paragraph:
+        stand = stand_paragraph.replace("Stand: ", "")
+        stand_datetime = datetime.datetime.strptime(stand, "%d.%m.%Y %H:%M:%S")
     list_response = []
     for row in table:
         dict = {}
@@ -37,17 +44,10 @@ def get_parkleitsystem_data():
         latlon = row[4].split(',')
         dict['Lat'] = float(latlon[0])
         dict['Lon'] = float(latlon[1])
+        dict['Stand'] = stand_datetime;
         list_response.append(dict)
     return jsonify(list_response)
 
-
-@app.route('/api/stand', methods=['GET'])
-def get_stand():
-    req = urllib.request.Request(url=url)
-    f = urllib.request.urlopen(req)
-    xhtml = f.read().decode('utf-8', 'ignore')
-    paragraph_parser.feed(xhtml)
-    return jsonify(paragraph_parser.stand)
 
 
 if __name__ == '__main__':
