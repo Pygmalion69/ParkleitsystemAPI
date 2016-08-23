@@ -10,7 +10,7 @@ app = Flask(__name__)
 url = 'https://www.kleve.de/de/inhalt/parken/'
 
 table_parser = HTMLTableParser()
-paragraph_parser = HTMLParagraphParser();
+paragraph_parser = HTMLParagraphParser()
 
 
 @app.errorhandler(404)
@@ -21,8 +21,10 @@ def not_found(error):
 @app.route('/api/parkleitsystem', methods=['GET'])
 def get_parkleitsystem_data():
     req = urllib.request.Request(url=url)
+    req.add_header('User-Agent', 'nitri.de')
+    req.add_header('Pragma', 'no-cache')
     f = urllib.request.urlopen(req)
-    # print(f.getcode())
+    print(f.getcode())
     xhtml = f.read().decode('utf-8', 'ignore')
     table_parser.feed(xhtml)
     if len(table_parser.tables) == 0:
@@ -44,9 +46,12 @@ def get_parkleitsystem_data():
         latlon = row[4].split(',')
         dict['Lat'] = float(latlon[0])
         dict['Lon'] = float(latlon[1])
-        dict['Stand'] = stand_datetime;
+        dict['Stand'] = stand_datetime
         list_response.append(dict)
-    return jsonify(list_response)
+    response = jsonify(list_response)
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    return response
 
 
 
