@@ -1,5 +1,5 @@
 #!flask/bin/python3.5
-from flask import Flask, jsonify
+from flask import Flask, make_response,  jsonify
 
 import requests
 from bs4 import BeautifulSoup
@@ -29,6 +29,8 @@ def get_parkleitsystem_data():
 
     list_response = []
 
+    list_response.append({'Stand': stand_datetime})
+
     for parking in parkings:
         dict = {}
         dict['Parkplatz'] = parking.Name.string
@@ -37,7 +39,7 @@ def get_parkleitsystem_data():
         dict['Frei'] = int(parking.Gesamt.string) - int(parking.Aktuell.string)
         dict['Lat'] = float(parking.LAT.string)
         dict['Lon'] = float(parking.LON.string)
-        dict['Stand'] = stand_datetime
+        #dict['Stand'] = stand_datetime
         list_response.append(dict)
 
     response = jsonify(list_response)
