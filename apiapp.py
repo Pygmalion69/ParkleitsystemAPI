@@ -27,10 +27,10 @@ def get_parkleitsystem_data():
 
     parkings = soup.find_all('Parkhaus')
 
-    complete_response = []
+    complete_response = {}
     list_response = []
 
-    complete_response.append({'Stand': stand_datetime})
+    complete_response['Stand'] = stand_datetime
 
     for parking in parkings:
         dict = {}
@@ -43,7 +43,7 @@ def get_parkleitsystem_data():
         #dict['Stand'] = stand_datetime
         list_response.append(dict)
 
-    complete_response.append({'Daten': list_response})
+    complete_response['Daten'] = list_response
     response = jsonify(complete_response)
     return response
 
