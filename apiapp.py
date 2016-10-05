@@ -10,7 +10,7 @@ app = Flask(__name__)
 url = 'https://www.kleve.de/de/inhalt/parken/'
 
 table_parser = HTMLTableParser()
-paragraph_parser = HTMLParagraphParser();
+paragraph_parser = HTMLParagraphParser()
 
 
 @app.errorhandler(404)
@@ -44,7 +44,7 @@ def get_parkleitsystem_data():
         latlon = row[4].split(',')
         dict['Lat'] = float(latlon[0])
         dict['Lon'] = float(latlon[1])
-        dict['Stand'] = stand_datetime;
+        dict['Stand'] = stand_datetime
         list_response.append(dict)
     return jsonify(list_response)
 
