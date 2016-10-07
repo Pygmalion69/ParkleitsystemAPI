@@ -1,17 +1,14 @@
-#!flask/bin/python
-from flask import Flask, jsonify, abort, make_response, request
-import urllib.request
-from html_table_parser import HTMLTableParser
-from html_table_parser import HTMLParagraphParser
-import datetime
+#!flask/bin/python3.5
+from flask import Flask, make_response, jsonify
+
+import requests
+from bs4 import BeautifulSoup
+
+import time
 
 app = Flask(__name__)
 
-url = 'https://www.kleve.de/de/inhalt/parken/'
-
-table_parser = HTMLTableParser()
-paragraph_parser = HTMLParagraphParser()
-
+url = 'https://www.kleve.de/parkleitsystem/pls.xml'
 
 @app.errorhandler(404)
 def not_found(error):
@@ -20,34 +17,36 @@ def not_found(error):
 
 @app.route('/api/parkleitsystem', methods=['GET'])
 def get_parkleitsystem_data():
-    req = urllib.request.Request(url=url)
-    f = urllib.request.urlopen(req)
-    # print(f.getcode())
-    xhtml = f.read().decode('utf-8', 'ignore')
-    table_parser.feed(xhtml)
-    if len(table_parser.tables) == 0:
-        abort(404)
-    table = table_parser.tables[0]
-    paragraph_parser.feed(xhtml)
-    stand_paragraph = paragraph_parser.stand
-    stand_datetime = datetime.time()
-    if stand_paragraph:
-        stand = stand_paragraph.replace("Stand: ", "")
-        stand_datetime = datetime.datetime.strptime(stand, "%d.%m.%Y %H:%M:%S")
-    list_response = []
-    for row in table:
-        dict = {}
-        dict['Parkplatz'] = row[0]
-        dict['Status'] = row[1]
-        dict['Gesamt'] = int(row[2])
-        dict['Frei'] = int(row[3])
-        latlon = row[4].split(',')
-        dict['Lat'] = float(latlon[0])
-        dict['Lon'] = float(latlon[1])
-        dict['Stand'] = stand_datetime
-        list_response.append(dict)
-    return jsonify(list_response)
+    result = requests.get(url)
+    xmldoc = result.content
 
+    soup = BeautifulSoup(xmldoc, "xml") # OS X
+    # soup = BeautifulSoup(xmldoc, "lxml-xml") # Linux
+
+    timestamp = soup.Daten.Zeitstempel.string
+    stand_epoch = int(time.mktime(time.strptime(timestamp, "%d.%m.%Y %H:%M:%S")))
+
+    parkings = soup.find_all('Parkhaus')
+
+    complete_response = {}
+    list_response = []
+
+    complete_response['Stand'] = stand_epoch
+
+    for parking in parkings:
+        dict = {}
+        dict['Parkplatz'] = parking.Name.string
+        dict['Status'] = parking.Status.string
+        dict['Gesamt'] = int(parking.Gesamt.string)
+        dict['Frei'] = int(parking.Gesamt.string) - int(parking.Aktuell.string)
+        dict['Lat'] = float(parking.LAT.string)
+        dict['Lon'] = float(parking.LON.string)
+        #dict['Stand'] = stand_epoch
+        list_response.append(dict)
+
+    complete_response['Daten'] = list_response
+    response = jsonify(complete_response)
+    return response
 
 
 if __name__ == '__main__':
